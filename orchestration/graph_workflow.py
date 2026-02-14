@@ -177,13 +177,26 @@ def build_graph():
     workflow.add_node("judge_node", judge_node)
     workflow.add_node("result_node", result_node)
 
-    # Entry
+    # Entry point
     workflow.set_entry_point("retrieve_node")
 
-    # Parallel branching
-    workflow.add_edge("retrieve_node", "bull_agent_node")
-    workflow.add_edge("retrieve_node", "bear_agent_node")
+    # -----------------------------------
+    # CONDITIONAL PARALLEL BRANCH
+    # -----------------------------------
 
+    def route_after_retrieve(state):
+        return ["bull_agent_node", "bear_agent_node"]
+
+    workflow.add_conditional_edges(
+        "retrieve_node",
+        route_after_retrieve,
+        {
+            "bull_agent_node": "bull_agent_node",
+            "bear_agent_node": "bear_agent_node"
+        },
+    )
+
+    # Join barrier
     workflow.add_edge("bull_agent_node", "join_node")
     workflow.add_edge("bear_agent_node", "join_node")
 
@@ -191,7 +204,6 @@ def build_graph():
     workflow.add_edge("score_node", "judge_node")
     workflow.add_edge("judge_node", "result_node")
 
-    # Finish
     workflow.set_finish_point("result_node")
 
     return workflow.compile()
