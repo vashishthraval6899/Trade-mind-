@@ -5,7 +5,7 @@ OPENROUTER_API_KEY = os.getenv("sk-or-v1-0bb1abb8145207414d772dd19c375dfa2822e64
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 def query_llm(prompt, max_tokens=500, temperature=0.3):
-
+    print("KEY LOADED:", OPENROUTER_API_KEY is not None)
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "HTTP-Referer": "https://trademind.app",
