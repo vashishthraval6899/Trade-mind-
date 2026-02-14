@@ -75,24 +75,27 @@ def retrieve_node(state: TradeMindState):
 
 
 # ----------------------------
-# Bull
+# Bull Agent
 # ----------------------------
 def bull_node(state: TradeMindState):
-    return {"bull": bull_agent(state["evidence"])}
+    return {
+        "bull": bull_agent(state["evidence"])
+    }
 
 
 # ----------------------------
-# Bear
+# Bear Agent
 # ----------------------------
 def bear_node(state: TradeMindState):
-    return {"bear": bear_agent(state["evidence"])}
+    return {
+        "bear": bear_agent(state["evidence"])
+    }
 
 
 # ----------------------------
-# Join Node (Critical)
+# Join (Synchronization Barrier)
 # ----------------------------
 def join_node(state: TradeMindState):
-    # Does nothing — just synchronization barrier
     return {}
 
 
@@ -165,27 +168,30 @@ def result_node(state: TradeMindState):
 def build_graph():
     workflow = StateGraph(TradeMindState)
 
-    workflow.add_node("retrieve", retrieve_node)
-    workflow.add_node("bull", bull_node)
-    workflow.add_node("bear", bear_node)
-    workflow.add_node("join", join_node)
-    workflow.add_node("score", score_node)
-    workflow.add_node("judge", judge_node)
-    workflow.add_node("result", result_node)
+    # Nodes
+    workflow.add_node("retrieve_node", retrieve_node)
+    workflow.add_node("bull_agent_node", bull_node)
+    workflow.add_node("bear_agent_node", bear_node)
+    workflow.add_node("join_node", join_node)
+    workflow.add_node("score_node", score_node)
+    workflow.add_node("judge_node", judge_node)
+    workflow.add_node("result_node", result_node)
 
-    workflow.set_entry_point("retrieve")
+    # Entry
+    workflow.set_entry_point("retrieve_node")
 
-    # Parallel
-    workflow.add_edge("retrieve", "bull")
-    workflow.add_edge("retrieve", "bear")
+    # Parallel branching
+    workflow.add_edge("retrieve_node", "bull_agent_node")
+    workflow.add_edge("retrieve_node", "bear_agent_node")
 
-    workflow.add_edge("bull", "join")
-    workflow.add_edge("bear", "join")
+    workflow.add_edge("bull_agent_node", "join_node")
+    workflow.add_edge("bear_agent_node", "join_node")
 
-    workflow.add_edge("join", "score")
-    workflow.add_edge("score", "judge")
-    workflow.add_edge("judge", "result")
+    workflow.add_edge("join_node", "score_node")
+    workflow.add_edge("score_node", "judge_node")
+    workflow.add_edge("judge_node", "result_node")
 
-    workflow.set_finish_point("result")
+    # Finish
+    workflow.set_finish_point("result_node")
 
     return workflow.compile()
