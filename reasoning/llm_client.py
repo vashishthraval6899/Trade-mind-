@@ -15,7 +15,7 @@ def query_llm(prompt: str, max_tokens: int = 500, temperature: float = 0.3):
     """
 
     api_key = os.getenv("OPENROUTER_API_KEY")
-    model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+    model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.2-3b-instruct:free")
 
     if not api_key:
         raise Exception("OPENROUTER_API_KEY not found. Check .env file.")
