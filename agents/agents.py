@@ -13,83 +13,109 @@ def safe_parse(response):
 
 
 def bull_agent(evidence):
-    prompt = f"""
+
+    summary_prompt = f"""
 You are a bullish equity analyst.
 
-Analyze the evidence and return ONLY strict JSON.
-
-Requirements:
-- bull_summary: max 120 words
-- bull_score: integer 0-100
-
-Return EXACT JSON:
-
-{{
-  "bull_summary": "...",
-  "bull_score": 0
-}}
-
-No commentary. No markdown. No extra text.
+Summarize the bullish case in max 80 words.
+No markdown. Just plain text.
 
 Evidence:
-{evidence[:4000]}
+{evidence[:3000]}
 """
-    raw = query_llm(prompt, max_tokens=500)
-    return safe_parse(raw)
+    summary = query_llm(summary_prompt, max_tokens=300, temperature=0.2)
+
+    score_prompt = f"""
+Based on the bullish strength described below,
+return ONLY a number between 0 and 100.
+
+Summary:
+{summary}
+"""
+    score_text = query_llm(score_prompt, max_tokens=50, temperature=0)
+
+    try:
+        score = int(''.join(filter(str.isdigit, score_text)))
+    except:
+        score = 50
+
+    return {
+        "bull_summary": summary.strip(),
+        "bull_score": max(0, min(score, 100))
+    }
 
 
 def bear_agent(evidence):
-    prompt = f"""
+
+    summary_prompt = f"""
 You are a bearish equity analyst.
 
-Analyze the evidence and return ONLY strict JSON.
-
-Requirements:
-- bear_summary: max 120 words
-- bear_score: integer 0-100
-
-Return EXACT JSON:
-
-{{
-  "bear_summary": "...",
-  "bear_score": 0
-}}
-
-No commentary. No markdown. No extra text.
+Summarize the bearish case in max 80 words.
+No markdown. Just plain text.
 
 Evidence:
-{evidence[:4000]}
+{evidence[:3000]}
 """
-    raw = query_llm(prompt, max_tokens=500)
-    return safe_parse(raw)
+    summary = query_llm(summary_prompt, max_tokens=300, temperature=0.2)
+
+    score_prompt = f"""
+Based on the bearish risk described below,
+return ONLY a number between 0 and 100.
+
+Summary:
+{summary}
+"""
+    score_text = query_llm(score_prompt, max_tokens=50, temperature=0)
+
+    try:
+        score = int(''.join(filter(str.isdigit, score_text)))
+    except:
+        score = 50
+
+    return {
+        "bear_summary": summary.strip(),
+        "bear_score": max(0, min(score, 100))
+    }
 
 
 def judge_agent(bull_output, bear_output, score_label, final_score):
-    prompt = f"""
+
+    summary_prompt = f"""
 You are a neutral portfolio manager.
 
-Inputs:
 Bull Score: {bull_output.get("bull_score")}
 Bear Score: {bear_output.get("bear_score")}
 Final Score: {final_score}
 Preliminary Decision: {score_label}
 
-Bull Summary:
-{bull_output.get("bull_summary")}
+In max 80 words:
+1. Validate decision
+2. Provide final decision: BUY / HOLD / SELL
+3. Give confidence: Low / Medium / High
 
-Bear Summary:
-{bear_output.get("bear_summary")}
+Respond in this format exactly:
 
-Return ONLY strict JSON:
-
-{{
-  "final_decision": "BUY/HOLD/SELL",
-  "confidence": "Low/Medium/High",
-  "final_summary": "max 100 words"
-}}
-
-No commentary. No markdown. Only JSON.
+Decision: BUY/HOLD/SELL
+Confidence: Low/Medium/High
+Summary: short explanation
 """
-    raw = query_llm(prompt, max_tokens=500)
-    return safe_parse(raw)
+    response = query_llm(summary_prompt, max_tokens=400, temperature=0.2)
 
+    decision = "HOLD"
+    confidence = "Medium"
+
+    if "BUY" in response.upper():
+        decision = "BUY"
+    elif "SELL" in response.upper():
+        decision = "SELL"
+
+    if "HIGH" in response.upper():
+        confidence = "High"
+    elif "LOW" in response.upper():
+        confidence = "Low"
+
+    return {
+        "final_decision": decision,
+        "confidence": confidence,
+        "final_summary": response.strip()
+    }
