@@ -60,12 +60,14 @@ def retrieve_node(state: TradeMindState):
 
     for group in [macro_context, sector_context, company_context]:
         for item in group:
-            combined_text += item["text"][:800] + "\n\n"
+            combined_text += item["text"][:350] + "\n\n"
 
     news_articles = fetch_news(ticker)
 
     for article in news_articles[:5]:
-        combined_text += article["title"] + "\n" + article["summary"] + "\n\n"
+        combined_text += article["title"] + "\n"
+        combined_text += article["summary"][:200] + "\n\n"
+
 
     return {
         "sector": sector,

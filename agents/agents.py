@@ -34,7 +34,7 @@ No commentary. No markdown. No extra text.
 Evidence:
 {evidence[:4000]}
 """
-    raw = query_llm(prompt, max_tokens=900)
+    raw = query_llm(prompt, max_tokens=500)
     return safe_parse(raw)
 
 
@@ -60,7 +60,7 @@ No commentary. No markdown. No extra text.
 Evidence:
 {evidence[:4000]}
 """
-    raw = query_llm(prompt, max_tokens=900)
+    raw = query_llm(prompt, max_tokens=500)
     return safe_parse(raw)
 
 
@@ -90,6 +90,6 @@ Return ONLY strict JSON:
 
 No commentary. No markdown. Only JSON.
 """
-    raw = query_llm(prompt, max_tokens=700)
+    raw = query_llm(prompt, max_tokens=500)
     return safe_parse(raw)
 
