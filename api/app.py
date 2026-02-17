@@ -6,33 +6,31 @@ from analyze import analyze
 app = FastAPI(title="TradeMind API")
 
 # -------------------------------
-# CORS Middleware
+# CORS
 # -------------------------------
-# Allows frontend applications to communicate with this backend.
-# In production, replace "*" with your frontend domain.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],  # change to your frontend domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -------------------------------
-# Request Schema
+# Request Model
 # -------------------------------
 class AnalyzeRequest(BaseModel):
     ticker: str
 
 # -------------------------------
-# Health Check Endpoint
+# Health Check
 # -------------------------------
 @app.get("/")
 def health():
     return {"status": "TradeMind API is running"}
 
 # -------------------------------
-# Stock Analysis Endpoint
+# Analyze Endpoint
 # -------------------------------
 @app.post("/analyze")
 def analyze_stock(request: AnalyzeRequest):
